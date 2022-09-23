@@ -4,7 +4,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
     name = "arm_none_eabi",
-    commit = "f90a64e94fbbc0ce49798cb2db6f498e569ef1d8",
+    commit = "f2130fa3c52f01df04521edb1fa4229edc317e68",
     remote = "https://github.com/andebjor/bazel-arm-none-eabi",
 )
 

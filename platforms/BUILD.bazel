@@ -7,3 +7,9 @@ platform(
     constraint_values = ["@stm32//boards/lm3s6965evb"],
     parents = ["@arm_none_eabi//platforms:cortex-m3"],
 )
+
+platform(
+    name = "f407g_disc1",
+    constraint_values = ["@stm32//boards/f407g_disc1"],
+    parents = ["@arm_none_eabi//platforms:cortex-m4"],
+)
