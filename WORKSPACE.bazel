@@ -4,8 +4,8 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
     name = "arm_none_eabi",
-    commit = "2a3033a2cceeaea0be0476b9bdecde4d0d00a603",
-    remote = "https://github.com/oliverlee/bazel-arm-none-eabi",
+    commit = "a8b315fdbe38ea0a89127d47fd45fa1988928e78",
+    remote = "https://github.com/andebjor/bazel-arm-none-eabi",
 )
 
 load("@arm_none_eabi//:deps.bzl", "arm_none_eabi_deps")
