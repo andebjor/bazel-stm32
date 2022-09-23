@@ -4,5 +4,5 @@ load("@stm32//:rules.bzl", "stm32_binary")
 stm32_binary(
     name = "semihosting",
     srcs = ["main.cpp"],
-    semihosting = True,
+    startup = "semihosting",
 )
