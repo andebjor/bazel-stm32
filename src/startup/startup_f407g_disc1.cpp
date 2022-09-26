@@ -12,6 +12,8 @@ extern void (*__init_array_end []) (void);
 extern std::uint32_t __StackTop;
 extern "C" [[noreturn]] auto Reset_Handler() -> void;
 
+extern "C" int main(void);
+
 // Generator for weak (default) interrupt handlers
 // A unique handler is defined for each interrupt so that it's easy to debug
 // deadlocks if an unexpected interrupt is caught.
@@ -233,7 +235,7 @@ __attribute__((section(".isr_vector"))) {
 };
 
 
-extern "C" [[noreturn]] auto __after_main_handler()
+extern "C" [[noreturn]] __attribute__((weak)) void exit(int /*ec*/)
 {
     while (true) {}
 }
@@ -272,14 +274,12 @@ extern "C" [[noreturn]] auto Reset_Handler() -> void {
     __init();
 
     // Jump to main
-    // We're not allowed to call `main` from inside a C++ program, and thus
-    // resort to inline assembly.
-    asm ("bl main");
+    int ec = main();
 
     // We don't expect main to return; jump to the abort handler
     // An alternative solution would be to reset and re-run the program. But
     // that might hide some bugs.
-    __after_main_handler();
+    exit(ec);
 }
 
 // extern "C" void _close(void) {}
