@@ -3,7 +3,7 @@ int main() {
     int y = 3;
 
     for (;;) {
-        int z = x + y;
+        volatile int z = x + y;
     }
 
     return 0;

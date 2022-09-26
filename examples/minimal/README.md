@@ -16,7 +16,7 @@ qemu-system-arm \
   -machine lm3s6965evb \
   -gdb tcp::3333 \
   -S \
-  -device loader,file=bazel-bin/examples/minimal/minimal
+  -device loader,file=bazel-bin/examples/minimal/minimal.elf
 ```
 
 Connect with gdb:
