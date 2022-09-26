@@ -12,30 +12,5 @@ stm32_binary(
     ],
     startup = "f407g_disc1",
     copts = ["-std=c++20"],
-    deps = [":st_gpio"],
-)
-
-cc_library(
-    name = "st_gpio",
-    srcs = [
-        "st/inc/STM32F4xx_StdPeriph_Driver/stm32f4xx_gpio.h",
-        "st/src/STM32F4xx_StdPeriph_Driver/stm32f4xx_gpio.c",
-        "st/inc/STM32F4xx_StdPeriph_Driver/stm32f4xx_rcc.h",
-        "st/inc/stm32f4xx_conf.h",
-        "st/inc/stm32f4xx.h",
-        "st/inc/CMSIS/core_cm4.h",
-        "st/inc/CMSIS/core_cmInstr.h",
-        "st/inc/CMSIS/core_cmFunc.h",
-        "st/inc/CMSIS/core_cm4_simd.h",
-        "st/inc/STM32F4xx/system_stm32f4xx.h",
-        "st/src/STM32F4xx_StdPeriph_Driver/stm32f4xx_rcc.c",
-    ],
-    includes = [
-        "st/inc/STM32F4xx_StdPeriph_Driver/",
-        "st/inc/",
-        "st/inc/CMSIS/",
-        "st/inc/STM32F4xx/",
-    ],
-    linkstatic = True,
-    visibility = ["//visibility:public"],
+    deps = ["@stm32//src/from_st:f407g_disc1_gpio"],
 )

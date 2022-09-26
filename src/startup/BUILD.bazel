@@ -8,30 +8,11 @@ cc_library(
         "startup_f407g_disc1.cpp",
     ],
     deps = [
-        ":f407g_disc1_st_code",
+        "@stm32//src/from_st:f407g_disc1_clock",
     ],
     linkstatic = True,
     visibility = ["//visibility:public"],
     copts = ["-std=c++20"],
-)
-
-cc_library(
-    name = "f407g_disc1_st_code",
-    srcs = [
-        "st/inc/system_stm32f4xx.h",
-        "st/src/system_stm32f4xx.c",
-        "st/inc/stm32f4xx.h",
-        "st/inc/CMSIS/core_cm4.h",
-        "st/inc/CMSIS/core_cmInstr.h",
-        "st/inc/CMSIS/core_cmFunc.h",
-        "st/inc/CMSIS/core_cm4_simd.h",
-    ],
-    includes = [
-        "st/inc",
-        "st/inc/CMSIS",
-    ],
-    linkstatic = True,
-    visibility = ["//visibility:public"],
 )
 
 cc_library(
