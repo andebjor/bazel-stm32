@@ -12,7 +12,16 @@ extern void (*__init_array_end []) (void);
 extern std::uint32_t __StackTop;
 extern "C" [[noreturn]] auto Reset_Handler() -> void;
 
+// The application entrypoint should exist somewhere in the application code
 extern "C" int main(void);
+
+// Stubs for system calls performed by the standard library. If any of these
+// stubs end up being called the microcontroller will spin in an endless loop.
+//
+// It's not entirely clear to me why these are being referencened, but it seems
+// to be fine to define them as below.
+extern "C" [[noreturn]] __attribute__((weak)) void _kill(int, int) { while (true) {} }
+extern "C" [[noreturn]] __attribute__((weak)) void _getpid(void) { while (true) {} }
 
 // Generator for weak (default) interrupt handlers
 // A unique handler is defined for each interrupt so that it's easy to debug
@@ -234,7 +243,6 @@ __attribute__((section(".isr_vector"))) {
     // External Interrupts
 };
 
-
 extern "C" [[noreturn]] __attribute__((weak)) void exit(int /*ec*/)
 {
     while (true) {}
@@ -281,8 +289,3 @@ extern "C" [[noreturn]] auto Reset_Handler() -> void {
     // that might hide some bugs.
     exit(ec);
 }
-
-// extern "C" void _close(void) {}
-// extern "C" void _lseek(void) {}
-// extern "C" void _read(void) {}
-// extern "C" void _write(void) {}
