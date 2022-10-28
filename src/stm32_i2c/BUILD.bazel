@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "stm32_i2c",
+    srcs = [
+            "inc/stm32_i2c.h",
+    ],
+    includes = [
+        "inc",
+    ],
+    deps = [
+        "@static_vector",
+        "@stm32//src/from_st:f407g_disc1_i2c",
+    ],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)

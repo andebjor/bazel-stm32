@@ -73,3 +73,19 @@ cc_library(
     sha256 = "867d37d9540fcb7fc41322b4f0f498bff7f32962d3ad5bd030a4f4da28b151f9",
     user = "boost-ext",
 )
+
+git_repository(
+    name = "static_vector",
+    remote = "https://github.com/andebjor/static_vector",
+    commit = "3e7d5b6b4645e55f45c625149916505192c8b1d3",
+    build_file_content = """
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "static_vector",
+    hdrs = ["include/experimental/fixed_capacity_vector"],
+    includes = ["include/experimental"],
+    visibility = ["//visibility:public"],
+)
+""",
+)
