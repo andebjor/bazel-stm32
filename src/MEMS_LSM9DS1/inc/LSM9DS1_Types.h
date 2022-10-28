@@ -192,8 +192,8 @@ struct gyroSettings
 
 struct deviceSettings
 {
-	uint8_t agAddress;	 // I2C address
-	uint8_t mAddress;	  // I2C address
+	uint8_t agAddress;  // Accelerometer and gyroscope I2C address
+	uint8_t mAddress;  // Magenotmerter I2C address
 	std::optional<stm32_i2c::I2C_interface> i2c;
 };
 

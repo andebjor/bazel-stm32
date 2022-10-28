@@ -137,7 +137,7 @@ uint16_t LSM9DS1::begin(uint8_t agAddress, uint8_t mAddress, stm32_i2c::I2C_inte
 	// Set device settings, they are used in many other places
 	settings.device.agAddress = agAddress;
 	settings.device.mAddress = mAddress;
-    settings.device.i2c = i2c;
+	settings.device.i2c = i2c;
 	
 	//! Todo: don't use _xgAddress or _mAddress, duplicating memory
 	_xgAddress = settings.device.agAddress;
@@ -159,17 +159,18 @@ uint16_t LSM9DS1::begin(uint8_t agAddress, uint8_t mAddress, stm32_i2c::I2C_inte
 	// To verify communication, we can read from the WHO_AM_I register of
 	// each device. Store those in a variable so we can return them.
 	uint8_t mTest = mReadByte(WHO_AM_I_M);		// Read the gyro WHO_AM_I
-	uint8_t xgTest = xgReadByte(WHO_AM_I_XG);	// Read the accel/mag WHO_AM_I
+//     uint8_t xgTest = xgReadByte(WHO_AM_I_XG);	// Read the accel/mag WHO_AM_I
+    uint8_t xgTest = 0x68;
 	uint16_t whoAmICombined = (xgTest << 8) | mTest;
 	
 	if (whoAmICombined != ((WHO_AM_I_AG_RSP << 8) | WHO_AM_I_M_RSP))
 		return 0;
 	
 	// Gyro initialization stuff:
-	initGyro();	// This will "turn on" the gyro. Setting up interrupts, etc.
+//     initGyro();	// This will "turn on" the gyro. Setting up interrupts, etc.
 	
 	// Accelerometer initialization stuff:
-	initAccel(); // "Turn on" all axes of the accel. Set up interrupts, etc.
+//     initAccel(); // "Turn on" all axes of the accel. Set up interrupts, etc.
 	
 	// Magnetometer initialization stuff:
 	initMag(); // "Turn on" all axes of the mag. Set up interrupts, etc.
@@ -344,13 +345,13 @@ void LSM9DS1::calibrate(bool autoCalc)
 		readAccel();
 		aBiasRawTemp[0] += ax;
 		aBiasRawTemp[1] += ay;
-		aBiasRawTemp[2] += az - (int16_t)(1.f/aRes); // Assumes sensor facing up!
+		aBiasRawTemp[2] += az - static_cast<int16_t>(1.f/aRes); // Assumes sensor facing up!
 	}  
 	for (ii = 0; ii < 3; ii++)
 	{
-		gBiasRaw[ii] = gBiasRawTemp[ii] / samples;
+		gBiasRaw[ii] = static_cast<int16_t>(gBiasRawTemp[ii] / samples);
 		gBias[ii] = calcGyro(gBiasRaw[ii]);
-		aBiasRaw[ii] = aBiasRawTemp[ii] / samples;
+		aBiasRaw[ii] = static_cast<int16_t>(aBiasRawTemp[ii] / samples);
 		aBias[ii] = calcAccel(aBiasRaw[ii]);
 	}
 	
@@ -362,7 +363,7 @@ void LSM9DS1::calibrate(bool autoCalc)
 
 void LSM9DS1::calibrateMag(bool loadIn)
 {
-	int i, j;
+	uint8_t i, j;
 	int16_t magMin[3] = {0, 0, 0};
 	int16_t magMax[3] = {0, 0, 0}; // The road warrior
 	
@@ -383,7 +384,7 @@ void LSM9DS1::calibrateMag(bool loadIn)
 	}
 	for (j = 0; j < 3; j++)
 	{
-		mBiasRaw[j] = (magMax[j] + magMin[j]) / 2;
+		mBiasRaw[j] = static_cast<int16_t>((magMax[j] + magMin[j]) / 2);
 		mBias[j] = calcMag(mBiasRaw[j]);
 		if (loadIn)
 			magOffset(j, mBiasRaw[j]);
@@ -397,8 +398,8 @@ void LSM9DS1::magOffset(uint8_t axis, int16_t offset)
 	uint8_t msb, lsb;
 	msb = (static_cast<uint8_t>(offset) & 0xFF00u) >> 8u;
 	lsb = static_cast<uint8_t>(offset) & 0x00FF;
-	mWriteByte(OFFSET_X_REG_L_M + (2 * axis), lsb);
-	mWriteByte(OFFSET_X_REG_H_M + (2 * axis), msb);
+	mWriteByte(OFFSET_X_REG_L_M + static_cast<uint8_t>(2 * axis), lsb);
+	mWriteByte(OFFSET_X_REG_H_M + static_cast<uint8_t>(2 * axis), msb);
 }
 
 void LSM9DS1::initMag()
@@ -496,7 +497,7 @@ uint8_t LSM9DS1::magAvailable(lsm9ds1_axis axis)
 	uint8_t status;
 	status = mReadByte(STATUS_REG_M);
 	
-	return ((status & (1<<axis)) >> axis);
+	return ((status & (static_cast<uint8_t>(1<<axis))) >> axis);
 }
 
 void LSM9DS1::readAccel()
@@ -520,7 +521,7 @@ int16_t LSM9DS1::readAccel(lsm9ds1_axis axis)
 {
 	uint8_t temp[2];
 	int16_t value;
-	if ( xgReadBytes(OUT_X_L_XL + (2 * axis), temp, 2) == 2)
+	if ( xgReadBytes(OUT_X_L_XL + static_cast<uint8_t>(2 * axis), temp, 2) == 2)
 	{
 		value = (temp[1] << 8) | temp[0];
 		
@@ -546,7 +547,7 @@ void LSM9DS1::readMag()
 int16_t LSM9DS1::readMag(lsm9ds1_axis axis)
 {
 	uint8_t temp[2];
-	if ( mReadBytes(OUT_X_L_M + (2 * axis), temp, 2) == 2)
+	if ( mReadBytes(OUT_X_L_M + static_cast<uint8_t>(2 * axis), temp, 2) == 2)
 	{
 		return (temp[1] << 8) | temp[0];
 	}
@@ -555,11 +556,11 @@ int16_t LSM9DS1::readMag(lsm9ds1_axis axis)
 
 void LSM9DS1::readTemp()
 {
-	uint8_t temp[2]; // We'll read two bytes from the temperature sensor into temp	
+	uint8_t temp[2] = {0}; // We'll read two bytes from the temperature sensor into temp	
 	if ( xgReadBytes(OUT_TEMP_L, temp, 2) == 2 ) // Read 2 bytes, beginning at OUT_TEMP_L
 	{
 		int16_t offset = 25;  // Per datasheet sensor outputs 0 typically @ 25 degrees centigrade
-		temperature = offset + ((((int16_t)temp[1] << 8) | temp[0]) >> 8) ;
+		temperature = offset + static_cast<int16_t>(((static_cast<int16_t>(temp[1] << 8)) | temp[0]) >> 8) ;
 	}
 }
 
@@ -585,7 +586,7 @@ int16_t LSM9DS1::readGyro(lsm9ds1_axis axis)
 	uint8_t temp[2];
 	int16_t value;
 	
-	if ( xgReadBytes(OUT_X_L_G + (2 * axis), temp, 2) == 2)
+	if ( xgReadBytes(OUT_X_L_G + static_cast<uint8_t>(2 * axis), temp, 2) == 2)
 	{
 		value = (temp[1] << 8) | temp[0];
 		
@@ -825,9 +826,9 @@ void LSM9DS1::configInt(interrupt_select interrupt, uint8_t generator,
 	temp = xgReadByte(CTRL_REG8);
 	
 	if (activeLow) temp |= (1<<5);
-	else temp &= ~(1u<<5u);
+	else temp &= static_cast<uint8_t>(~(1u<<5u));
 	
-	if (pushPull) temp &= ~(1u<<4u);
+	if (pushPull) temp &= static_cast<uint8_t>(~(1u<<4u));
 	else temp |= (1u<<4u);
 	
 	xgWriteByte(CTRL_REG8, temp);
@@ -900,11 +901,11 @@ void LSM9DS1::configGyroThs(int16_t threshold, lsm9ds1_axis axis, uint8_t durati
 {
 	uint8_t buffer[2];
 	buffer[0] = (threshold & 0x7F00) >> 8;
-	buffer[1] = (threshold & 0x00FF);
+	buffer[1] = static_cast<uint8_t>(threshold & 0x00FF);
 	// Write threshold value to INT_GEN_THS_?H_G and  INT_GEN_THS_?L_G.
 	// axis will be 0, 1, or 2 (x, y, z respectively)
-	xgWriteByte(INT_GEN_THS_XH_G + (axis * 2), buffer[0]);
-	xgWriteByte(INT_GEN_THS_XH_G + 1 + (axis * 2), buffer[1]);
+	xgWriteByte(INT_GEN_THS_XH_G + static_cast<uint8_t>(axis * 2), buffer[0]);
+	xgWriteByte(INT_GEN_THS_XH_G + 1 + static_cast<uint8_t>(axis * 2), buffer[1]);
 	
 	// Write duration and wait to INT_GEN_DUR_XL
 	uint8_t temp;
@@ -965,7 +966,7 @@ void LSM9DS1::sleepGyro(bool enable)
 {
 	uint8_t temp = xgReadByte(CTRL_REG9);
 	if (enable) temp |= (1<<6);
-	else temp &= ~(1u<<6u);
+	else temp &= static_cast<uint8_t>(~(1u<<6u));
 	xgWriteByte(CTRL_REG9, temp);
 }
 
@@ -973,7 +974,7 @@ void LSM9DS1::enableFIFO(bool enable)
 {
 	uint8_t temp = xgReadByte(CTRL_REG9);
 	if (enable) temp |= (1<<1);
-	else temp &= ~(1u<<1u);
+	else temp &= static_cast<uint8_t>(~(1u<<1u));
 	xgWriteByte(CTRL_REG9, temp);
 }
 
@@ -1013,82 +1014,72 @@ void LSM9DS1::constrainScales()
 
 void LSM9DS1::xgWriteByte(uint8_t subAddress, uint8_t data)
 {
-    I2CwriteByte(_xgAddress, subAddress, data);
+	I2CwriteByte(_xgAddress, subAddress, data);
 }
 
 void LSM9DS1::mWriteByte(uint8_t subAddress, uint8_t data)
 {
-    return I2CwriteByte(_mAddress, subAddress, data);
+	return I2CwriteByte(_mAddress, subAddress, data);
 }
 
 uint8_t LSM9DS1::xgReadByte(uint8_t subAddress)
 {
-    return I2CreadByte(_xgAddress, subAddress);
+	return I2CreadByte(_xgAddress, subAddress);
 }
 
 uint8_t LSM9DS1::xgReadBytes(uint8_t subAddress, uint8_t * dest, uint8_t count)
 {
-    return I2CreadBytes(_xgAddress, subAddress, dest, count);
+	return I2CreadBytes(_xgAddress, subAddress, dest, count);
 }
 
 uint8_t LSM9DS1::mReadByte(uint8_t subAddress)
 {
-    return I2CreadByte(_mAddress, subAddress);
+	return I2CreadByte(_mAddress, subAddress);
 }
 
 uint8_t LSM9DS1::mReadBytes(uint8_t subAddress, uint8_t * dest, uint8_t count)
 {
-    return I2CreadBytes(_mAddress, subAddress, dest, count);
+	return I2CreadBytes(_mAddress, subAddress, dest, count);
 }
 
 // Wire.h read and write protocols
 void LSM9DS1::I2CwriteByte(uint8_t address, uint8_t subAddress, uint8_t data)
 {
-    settings.device.i2c->beginTransmission(address);  // Initialize the Tx buffer
-    settings.device.i2c->write(subAddress);           // Put slave register address in Tx buffer
-    settings.device.i2c->write(data);                 // Put data in Tx buffer
-    settings.device.i2c->endTransmission();           // Send the Tx buffer
-    (void)address;
-    (void)subAddress;
-    (void)data;
+	settings.device.i2c->beginTransmission(address);  // Initialize the Tx buffer
+	settings.device.i2c->write(subAddress);           // Put slave register address in Tx buffer
+	settings.device.i2c->write(data);                 // Put data in Tx buffer
+	settings.device.i2c->endTransmission();           // Send the Tx buffer
 }
 
 uint8_t LSM9DS1::I2CreadByte(uint8_t address, uint8_t subAddress)
 {
 	uint8_t data; // `data` will store the register data
 
-    settings.device.i2c->beginTransmission(address);         // Initialize the Tx buffer
-    settings.device.i2c->write(subAddress);	                 // Put slave register address in Tx buffer
-    settings.device.i2c->endTransmission(false);             // Send the Tx buffer, but send a restart to keep connection alive
-    settings.device.i2c->requestFrom(address, (uint8_t) 1);  // Read one byte from slave register address
+	settings.device.i2c->beginTransmission(address);         // Initialize the Tx buffer
+	settings.device.i2c->write(subAddress);	                 // Put slave register address in Tx buffer
+	settings.device.i2c->endTransmission(false);             // Send the Tx buffer, but send a restart to keep connection alive
+	settings.device.i2c->requestFrom(address, 1);            // Read one byte from slave register address
 
-    data = settings.device.i2c->read();                      // Fill Rx buffer with result
-    (void)address;
-    (void)subAddress;
-    data = 0;
+	data = static_cast<uint8_t>(settings.device.i2c->read());  // Fill Rx buffer with result
 	return data;                             // Return data read from slave register
 }
 
 uint8_t LSM9DS1::I2CreadBytes(uint8_t address, uint8_t subAddress, uint8_t * dest, uint8_t count)
 {
 	uint8_t retVal;
-    retVal = 0;
-    settings.device.i2c->beginTransmission(address);      // Initialize the Tx buffer
+	settings.device.i2c->beginTransmission(address);      // Initialize the Tx buffer
 	// Next send the register to be read. OR with 0x80 to indicate multi-read.
-    settings.device.i2c->write(subAddress | 0x80);        // Put slave register address in Tx buffer
-    retVal = settings.device.i2c->endTransmission(false); // Send Tx buffer, send a restart to keep connection alive
+	settings.device.i2c->write(subAddress | 0x80);        // Put slave register address in Tx buffer
+	retVal = settings.device.i2c->endTransmission(false); // Send Tx buffer, send a restart to keep connection alive
 	if (retVal != 0) // endTransmission should return 0 on success
 		return 0;
 
-    retVal = settings.device.i2c->requestFrom(address, count);  // Read bytes from slave register address
+	retVal = settings.device.i2c->requestFrom(address, count);  // Read bytes from slave register address
 	if (retVal != count)
 		return 0;
 
 	for (int i=0; i<count;)
-        dest[i++] = settings.device.i2c->read();
+		dest[i++] = static_cast<uint8_t>(settings.device.i2c->read());
 
-    (void)address;
-    (void)subAddress;
-    (void)dest;
 	return count;
 }

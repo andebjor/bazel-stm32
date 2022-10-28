@@ -9,7 +9,7 @@ stm32_binary(
         ".",
     ],
     startup = "f407g_disc1",
-    copts = ["-std=c++20"],
+    copts = ["-std=c++20", "-O0"],
     deps = [
         "@stm32//src/from_st:f407g_disc1_i2c",
         "@stm32//src/MEMS_LSM9DS1",

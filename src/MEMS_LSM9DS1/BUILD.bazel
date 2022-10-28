@@ -3,24 +3,18 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
     name = "MEMS_LSM9DS1",
     srcs = [
-        "inc/LSM9DS1_Registers.h",
-        "inc/LSM9DS1_Types.h",
         "src/SparkFunLSM9DS1.cpp",
     ],
     hdrs = [
         "inc/SparkFunLSM9DS1.h",
-    ],
-    includes = [
-        "inc",
+        "inc/LSM9DS1_Registers.h",
+        "inc/LSM9DS1_Types.h",
     ],
     strip_include_prefix = "inc",
-    copts = [
-        "-Wno-error=old-style-cast",
-        "-Wno-error=conversion",
-    ],
     deps = [
         "@stm32//src/stm32_i2c",
     ],
+    copts = ["-O0"],
     linkstatic = True,
     visibility = ["//visibility:public"],
 )
