@@ -43,3 +43,22 @@ cc_library(
     linkstatic = True,
     visibility = ["//visibility:public"],
 )
+
+cc_library(
+    name = "f407g_disc1_i2c",
+    srcs = [
+        "inc/STM32F4xx_StdPeriph_Driver/stm32f4xx_i2c.h",
+        "src/STM32F4xx_StdPeriph_Driver/stm32f4xx_i2c.c",
+    ],
+    includes = [
+        "inc/STM32F4xx_StdPeriph_Driver/",
+    ],
+    deps = [
+        "f407g_disc1_gpio"
+    ],
+    copts = [
+        "-Wno-error=conversion",
+    ],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
