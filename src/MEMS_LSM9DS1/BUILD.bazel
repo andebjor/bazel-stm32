@@ -1,0 +1,23 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "MEMS_LSM9DS1",
+    srcs = [
+        "inc/LSM9DS1_Registers.h",
+        "inc/LSM9DS1_Types.h",
+        "src/SparkFunLSM9DS1.cpp",
+    ],
+    hdrs = [
+        "inc/SparkFunLSM9DS1.h",
+    ],
+    includes = [
+        "inc",
+    ],
+    strip_include_prefix = "inc",
+    copts = [
+        "-Wno-error=old-style-cast",
+        "-Wno-error=conversion",
+    ],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+)
