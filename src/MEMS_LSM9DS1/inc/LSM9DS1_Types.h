@@ -21,17 +21,12 @@ Distributed as-is; no warranty is given.
 #ifndef __LSM9DS1_Types_H__
 #define __LSM9DS1_Types_H__
 
-#include "LSM9DS1_Registers.h"
-#include <Wire.h>
+#include <optional>
 
-// The LSM9DS1 functions over both I2C or SPI. This library supports both.
-// But the interface mode used must be sent to the LSM9DS1 constructor. Use
-// one of these two as the first parameter of the constructor.
-enum interface_mode
-{
-	IMU_MODE_SPI,
-	IMU_MODE_I2C,
-};
+#include "LSM9DS1_Registers.h"
+#include "stm32_i2c.h"
+
+#include <cstdint>
 
 // accel_scale defines all possible FSR's of the accelerometer:
 enum accel_scale
@@ -197,10 +192,9 @@ struct gyroSettings
 
 struct deviceSettings
 {
-	uint8_t commInterface; // Can be I2C, SPI 4-wire or SPI 3-wire
-	uint8_t agAddress;	 // I2C address or SPI CS pin
-	uint8_t mAddress;	  // I2C address or SPI CS pin
-  TwoWire* i2c;    // pointer to an instance of I2C interface
+	uint8_t agAddress;	 // I2C address
+	uint8_t mAddress;	  // I2C address
+	std::optional<stm32_i2c::I2C_interface> i2c;
 };
 
 struct accelSettings

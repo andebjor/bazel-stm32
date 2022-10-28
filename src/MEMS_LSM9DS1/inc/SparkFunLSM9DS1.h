@@ -22,12 +22,7 @@ Distributed as-is; no warranty is given.
 #ifndef __SparkFunLSM9DS1_H__
 #define __SparkFunLSM9DS1_H__
 
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-  #include "pins_arduino.h"
-#endif
+#include "stm32_i2c.h"
 
 #include "LSM9DS1_Registers.h"
 #include "LSM9DS1_Types.h"
@@ -63,27 +58,18 @@ public:
 	// The constructor will set up a handful of private variables, and set the
 	// communication mode as well.
 	// Input:
-	//	- interface = Either IMU_MODE_SPI or IMU_MODE_I2C, whichever you're using
-	//				to talk to the IC.
-	//	- xgAddr = If IMU_MODE_I2C, this is the I2C address of the accel/gyroscope.
-	// 				If IMU_MODE_SPI, this is the chip select pin of the gyro (CS_AG)
-	//	- mAddr = If IMU_MODE_I2C, this is the I2C address of the magnetometer.
-	//				If IMU_MODE_SPI, this is the cs pin of the magnetometer (CS_M)
+	//	- xgAddr = I2C address of the accel/gyroscope.
+	//	- mAddr = I2C address of the magnetometer.
 	LSM9DS1();
 		
-	// begin() and beginSPI() -- Initialize the gyro, accelerometer, and magnetometer.
+	// begin() -- Initialize the gyro, accelerometer, and magnetometer.
 	// This will set up the scale and output rate of each sensor. The values set
 	// in the IMUSettings struct will take effect after calling this function.
 	// INPUTS:
-	// - agAddress - Sets either the I2C address of the accel/gyro or SPI chip 
-	//   select pin connected to the CS_XG pin.
-	// - mAddress - Sets either the I2C address of the magnetometer or SPI chip 
-	//   select pin connected to the CS_M pin.
-	// - i2C port (Note, only on "begin()" funtion, for use with I2C com interface)
-	//   defaults to Wire, but if hardware supports it, can use other TwoWire ports.
-	//   **For SPI use "beginSPI()", and only send first two address arguments.
-	uint16_t begin(uint8_t agAddress = LSM9DS1_AG_ADDR(1), uint8_t mAddress = LSM9DS1_M_ADDR(1), TwoWire &wirePort = Wire); //By default use the default I2C addres, and use Wire port
-	uint16_t beginSPI(uint8_t ag_CS_pin, uint8_t m_CS_pin);
+	// - agAddress - Sets the I2C address of the accel/gyro
+	// - mAddress - Sets the I2C address of the magnetometer
+	// - i2C port
+	uint16_t begin(uint8_t agAddress, uint8_t mAddress, stm32_i2c::I2C_interface& i2c);
 	
 	void calibrate(bool autoCalc = true);
 	void calibrateMag(bool loadIn = true);
@@ -339,8 +325,7 @@ public:
 		
 
 protected:	
-	// x_mAddress and gAddress store the I2C address or SPI chip select pin
-	// for each sensor.
+	// x_mAddress and gAddress store the I2C address for each sensor.
 	uint8_t _mAddress, _xgAddress;
 	
 	// gRes, aRes, and mRes store the current resolution for each sensor. 
@@ -353,7 +338,7 @@ protected:
 	bool _autoCalc;
 	
 	// init() -- Sets up gyro, accel, and mag settings to default.
-	// to set com interface and/or addresses see begin() and beginSPI().
+	// to set com interface and/or addresses see begin().
 	void init();
 	
 	// initGyro() -- Sets up the gyroscope to begin reading.
@@ -366,7 +351,7 @@ protected:
 	//	- CTRL_REG3_G = 0x88: Interrupt enabled on INT_G (set to push-pull and
 	//		active high). Data-ready output enabled on DRDY_G.
 	//	- CTRL_REG4_G = 0x00: Continuous update mode. Data LSB stored in lower
-	//		address. Scale set to 245 DPS. SPI mode set to 4-wire.
+	//		address. Scale set to 245 DPS.
 	//	- CTRL_REG5_G = 0x00: FIFO disabled. HPF disabled.
 	void initGyro();
 	
@@ -460,39 +445,6 @@ protected:
 	void constrainScales();
 	
 	///////////////////
-	// SPI Functions //
-	///////////////////
-	// initSPI() -- Initialize the SPI hardware.
-	// This function will setup all SPI pins and related hardware.
-	void initSPI();
-	
-	// SPIwriteByte() -- Write a byte out of SPI to a register in the device
-	// Input:
-	//	- csPin = The chip select pin of the slave device.
-	//	- subAddress = The register to be written to.
-	//	- data = Byte to be written to the register.
-	void SPIwriteByte(uint8_t csPin, uint8_t subAddress, uint8_t data);
-	
-	// SPIreadByte() -- Read a single byte from a register over SPI.
-	// Input:
-	//	- csPin = The chip select pin of the slave device.
-	//	- subAddress = The register to be read from.
-	// Output:
-	//	- The byte read from the requested address.
-	uint8_t SPIreadByte(uint8_t csPin, uint8_t subAddress);
-	
-	// SPIreadBytes() -- Read a series of bytes, starting at a register via SPI
-	// Input:
-	//	- csPin = The chip select pin of a slave device.
-	//	- subAddress = The register to begin reading.
-	// 	- * dest = Pointer to an array where we'll store the readings.
-	//	- count = Number of registers to be read.
-	// Output: No value is returned by the function, but the registers read are
-	// 		all stored in the *dest array given.
-	uint8_t SPIreadBytes(uint8_t csPin, uint8_t subAddress, 
-							uint8_t * dest, uint8_t count);
-	
-	///////////////////
 	// I2C Functions //
 	///////////////////
 	
@@ -511,7 +463,7 @@ protected:
 	//	- The byte read from the requested address.
 	uint8_t I2CreadByte(uint8_t address, uint8_t subAddress);
 	
-	// I2CreadBytes() -- Read a series of bytes, starting at a register via SPI
+	// I2CreadBytes() -- Read a series of bytes, starting at a register over I2C.
 	// Input:
 	//	- address = The 7-bit I2C address of the slave device.
 	//	- subAddress = The register to begin reading.

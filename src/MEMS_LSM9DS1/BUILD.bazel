@@ -18,6 +18,9 @@ cc_library(
         "-Wno-error=old-style-cast",
         "-Wno-error=conversion",
     ],
+    deps = [
+        "@stm32//src/stm32_i2c",
+    ],
     linkstatic = True,
     visibility = ["//visibility:public"],
 )
